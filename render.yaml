@@ -31,17 +31,3 @@ services:
         value: "6"
       - key: OTP_EXPIRY_MINUTES
         value: "10"
-
-  - type: web
-    name: aroma-frontend
-    env: node
-    plan: free
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    startCommand: npm start
-    envVars:
-      - key: NEXT_PUBLIC_API_URL
-        fromService:
-          type: web
-          name: aroma-backend
-          envVarKey: RENDER_EXTERNAL_URL
