@@ -8,7 +8,7 @@ const getMockAssessment = (id: string) => ({
 });
 
 const getMockStudentAssessment = (id: string): StudentAssessment => ({
-  _id: id, title: "Mock Assessment " + id, duration: 60, questions: [
+  assessment_id: id, title: "Mock Assessment " + id, duration: 60, total_questions: 2, total_marks: 15, passing_marks: 10, topic: "React", questions: [
     { _id: "q1", title: "What is React?", description: "What is React and how does it work?", question_type: "mcq", marks: 5, options: ["A library", "A framework", "A database", "A language"], starter_code: "", supported_languages: [] },
     { _id: "q2", title: "Write a function", description: "Write a function that returns true", question_type: "coding", marks: 10, options: [], supported_languages: ["javascript", "python"], starter_code: "function main() {\n  \n}" }
   ]
