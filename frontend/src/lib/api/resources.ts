@@ -1,0 +1,23 @@
+import { api } from "@/lib/api/client";
+import type { AdminStudent, Job, StudentDashboard } from "@/lib/api/types";
+
+export const getStudentDashboard = () => api<StudentDashboard>("/student/dashboard");
+export const getStudentResults = () => api<Array<{ assessment_id: string; score: number; total_marks: number; percentage: number; result: string; submitted_at?: string }>>("/student/results");
+export const getAdminStudents = () => api<AdminStudent[]>("/admin/students");
+export const deactivateStudent = (id: string) => api<{ message: string }>(`/admin/students/${id}`, { method: "DELETE" });
+export const getLeaderboard = () => api<Array<{ student_id: string; student_name: string; average_score: number; total_attempts: number; rank: number }>>("/leaderboard");
+export const getJobs = () => api<Job[]>("/jobs");
+export const saveJob = (id: string) => api<{ message: string }>(`/jobs/${id}/save`, { method: "POST" });
+export const applyToJob = (id: string) => api<{ message: string }>(`/jobs/${id}/apply`, { method: "POST" });
+export type MentorMessage = { id: string; role: "user" | "assistant"; content: string; timestamp: string };
+export type PassportData = { name: string; email: string; passport_score: number; assessment_count: number; average_score: number; verified: boolean; skills: Array<{ skill: string; value: number }>; certificates: unknown[] };
+export type SkillGapData = { target_role: string; match_percentage: number; estimated_time: string; current_skills: Array<{ name: string; level: number; required: number }>; missing_skills: string[] };
+export type GithubData = { username: string; headline: string; stats: { repos: number; stars: number; followers: number; commits: number }; repositories: Array<{ name: string; description?: string; stars?: number; forks?: number; technologies?: string[] }>; languages: Array<{ name: string; percentage: number; color?: string }>; contributions: Array<{ date: string; count: number }>; monthly_commits: Array<{ month: string; commits: number }> };
+export type RecruiterCandidate = { id: string; name: string; email: string; title: string; location: string; skills: string[]; passport_score: number; status: "New" | "Shortlisted" | "Interview" | "Hired" | "Rejected" };
+export const getMentorMessages = () => api<MentorMessage[]>("/mentor/messages");
+export const sendMentorMessage = (content: string) => api<MentorMessage>("/mentor/messages", { method: "POST", body: JSON.stringify({ content }) });
+export const getPassport = () => api<PassportData>("/passport");
+export const getSkillGap = () => api<SkillGapData>("/skill-gap");
+export const getGithubProfile = () => api<GithubData>("/github/profile");
+export const getRecruiterCandidates = () => api<RecruiterCandidate[]>("/recruiter/candidates");
+export const updateCandidateStatus = (id: string, status: RecruiterCandidate["status"]) => api<{ message: string }>(`/recruiter/candidates/${id}/status`, { method: "PUT", body: JSON.stringify({ status }) });
