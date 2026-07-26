@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: aroma-backend
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: MONGODB_URL
+        sync: false
+      - key: DATABASE_NAME
+        value: "aroma_db"
+      - key: JUDGE0_URL
+        sync: false
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: SMTP_HOST
+        value: "smtp.gmail.com"
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: EMAIL_FROM_NAME
+        value: "AROMA"
+      - key: OTP_LENGTH
+        value: "6"
+      - key: OTP_EXPIRY_MINUTES
+        value: "10"
+
+  - type: web
+    name: aroma-frontend
+    env: node
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: aroma-backend
+          property: envVar
+          envVarKey: RENDER_EXTERNAL_URL
