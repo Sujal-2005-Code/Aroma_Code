@@ -17,13 +17,13 @@ export default function RecruiterPage() {
   useEffect(() => { 
     getRecruiterCandidates().then((cands) => {
       const mockCandidates: RecruiterCandidate[] = cands && cands.length > 0 ? cands : [
-        { id: "c1", name: "Alice Smith", email: "alice@example.com", title: "Frontend Developer", skills: ["React", "TypeScript", "Tailwind"], passport_score: 92, status: "New" },
-        { id: "c2", name: "Bob Johnson", email: "bob@example.com", title: "Backend Developer", skills: ["Node.js", "Express", "MongoDB"], passport_score: 88, status: "Shortlisted" },
-        { id: "c3", name: "Charlie Davis", email: "charlie@example.com", title: "Full Stack Engineer", skills: ["React", "Python", "PostgreSQL"], passport_score: 95, status: "Interview" },
-        { id: "c4", name: "Diana Prince", email: "diana@example.com", title: "UI/UX Designer", skills: ["Figma", "CSS", "HTML"], passport_score: 85, status: "Hired" },
-        { id: "c5", name: "Evan Wright", email: "evan@example.com", title: "Data Scientist", skills: ["Python", "Machine Learning", "SQL"], passport_score: 72, status: "Rejected" },
-        { id: "c6", name: "Fiona Gallagher", email: "fiona@example.com", title: "DevOps Engineer", skills: ["Docker", "Kubernetes", "AWS"], passport_score: 89, status: "New" },
-        { id: "c7", name: "George Miller", email: "george@example.com", title: "Product Manager", skills: ["Agile", "Scrum", "Jira"], passport_score: 91, status: "Shortlisted" },
+        { id: "c1", name: "Alice Smith", email: "alice@example.com", location: "Remote", title: "Frontend Developer", skills: ["React", "TypeScript", "Tailwind"], passport_score: 92, status: "New" },
+        { id: "c2", name: "Bob Johnson", email: "bob@example.com", location: "Remote", title: "Backend Developer", skills: ["Node.js", "Express", "MongoDB"], passport_score: 88, status: "Shortlisted" },
+        { id: "c3", name: "Charlie Davis", email: "charlie@example.com", location: "Remote", title: "Full Stack Engineer", skills: ["React", "Python", "PostgreSQL"], passport_score: 95, status: "Interview" },
+        { id: "c4", name: "Diana Prince", email: "diana@example.com", location: "Remote", title: "UI/UX Designer", skills: ["Figma", "CSS", "HTML"], passport_score: 85, status: "Hired" },
+        { id: "c5", name: "Evan Wright", email: "evan@example.com", location: "Remote", title: "Data Scientist", skills: ["Python", "Machine Learning", "SQL"], passport_score: 72, status: "Rejected" },
+        { id: "c6", name: "Fiona Gallagher", email: "fiona@example.com", location: "Remote", title: "DevOps Engineer", skills: ["Docker", "Kubernetes", "AWS"], passport_score: 89, status: "New" },
+        { id: "c7", name: "George Miller", email: "george@example.com", location: "Remote", title: "Product Manager", skills: ["Agile", "Scrum", "Jira"], passport_score: 91, status: "Shortlisted" },
       ];
       setCandidates(mockCandidates);
     }).catch((cause) => setError(cause instanceof Error ? cause.message : "Could not load candidates.")); 
