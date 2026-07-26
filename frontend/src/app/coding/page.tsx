@@ -47,7 +47,7 @@ export default function CodingPage() {
         { _id: "q9", title: "Palindrome Number", difficulty: "Easy", question_type: "coding" },
         { _id: "q10", title: "Regular Expression Matching", difficulty: "Hard", question_type: "coding" },
       ];
-      setCodingProblems(mockQuestions.filter((question) => question.question_type === "coding").map((question) => ({ id: question._id, title: question.title || question.description, difficulty: question.difficulty?.toLowerCase() === "easy" ? "Easy" : question.difficulty?.toLowerCase() === "hard" ? "Hard" : "Medium", solved: false, acceptance: Math.floor(Math.random() * 60) + 20 })));
+      setCodingProblems(mockQuestions.filter((question) => question.question_type === "coding").map((question) => ({ id: question._id, title: question.title || (question as any).description, difficulty: question.difficulty?.toLowerCase() === "easy" ? "Easy" : question.difficulty?.toLowerCase() === "hard" ? "Hard" : "Medium", solved: false, acceptance: Math.floor(Math.random() * 60) + 20 })));
     }).catch((cause) => setError(cause instanceof Error ? cause.message : "Could not load coding problems."));
     getLeaderboard().then(data => {
       const mockLeaderboard = data && data.length > 0 ? data : [
