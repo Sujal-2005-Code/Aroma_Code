@@ -62,7 +62,7 @@ export default function LoginPage() {
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 group">
             <Image
-              src="/assets/Aroma Logo.png"
+              src="/assets/aroma-logo.png"
               alt="Aroma Logo"
               width={48}
               height={48}

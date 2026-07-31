@@ -20,7 +20,7 @@ export function Footer() {
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <Image
-                src="/assets/Aroma Logo.png"
+                src="/assets/aroma-logo.png"
                 alt="Aroma Logo"
                 width={36}
                 height={36}

@@ -50,7 +50,7 @@ export function Navbar({ isDashboard = false }: { isDashboard?: boolean }) {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <Image
-              src="/assets/Aroma Logo.png"
+              src="/assets/aroma-logo.png"
               alt="Aroma Logo"
               width={36}
               height={36}
