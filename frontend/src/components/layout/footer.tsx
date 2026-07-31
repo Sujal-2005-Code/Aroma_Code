@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Sparkles, Globe, ExternalLink, MessageCircle, Mail } from "lucide-react";
 
 const footerLinks = {
@@ -19,7 +18,7 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
-              <Image
+              <img
                 src="/assets/aroma-logo.png"
                 alt="Aroma Logo"
                 width={36}
