@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
-import AnimatedBackground from "@/components/layout/background-particles";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import SmoothScroll from "@/components/layout/smooth-scroll";
 
@@ -27,7 +26,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" data-scroll-behavior="smooth" className="font-sans">
       <body className="relative isolate">
         <SmoothScroll />
-        <AnimatedBackground />
         <div className="relative z-10">
           <TooltipProvider>{children}</TooltipProvider>
         </div>

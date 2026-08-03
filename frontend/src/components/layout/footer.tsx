@@ -31,7 +31,7 @@ export function Footer() {
 
               <div className="flex items-center gap-3">
                 <Image
-                  src="/assets/Robot.png"
+                  src="/assets/aroma-logo.png"
                   alt="Aroma Logo"
                   width={44}
                   height={44}

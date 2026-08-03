@@ -48,7 +48,7 @@ export default function AboutPage() {
                   loop
                   muted
                   playsInline
-                  poster="/assets/Aroma Logo.png"
+                  poster="/assets/aroma-logo.png"
                   className="w-full rounded-[1.25rem] object-cover shadow-2xl"
                 >
                   <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4" />

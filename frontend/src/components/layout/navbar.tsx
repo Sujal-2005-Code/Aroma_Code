@@ -60,7 +60,7 @@ export function Navbar({ isDashboard = false }: { isDashboard?: boolean }) {
               className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-orange/20 to-brand-pink/20 p-1 shadow-inner shadow-brand-orange/20"
             >
               <Image
-                src="/assets/Robot.png"
+                src="/assets/aroma-logo.png"
                 alt="Aroma Logo"
                 width={32}
                 height={32}

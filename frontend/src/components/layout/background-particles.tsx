@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useMotionTemplate, useMotionValue, useTransform } from "framer-motion";
 
-const PARTICLE_COUNT = 34;
-const STAR_COUNT = 72;
-const BLOB_COUNT = 4;
+const PARTICLE_COUNT = 18;
+const STAR_COUNT = 26;
+const BLOB_COUNT = 2;
 
 const particlePalette = ["#FF8A1A", "#F61E66", "#8B5CF6", "#38BDF8", "#10B981", "#FACC15"] as const;
 
@@ -58,19 +58,49 @@ function createRandomizedItems(count: number, seedBase: number) {
 
 function usePointer() {
   const [pointer, setPointer] = useState({ x: 0.5, y: 0.32 });
+  const latestPoint = useRef({ x: 0.5, y: 0.32 });
+  const frameRef = useRef<number | null>(null);
 
   useEffect(() => {
     const onMove = (event: PointerEvent) => {
-      const x = clamp(event.clientX / window.innerWidth, 0, 1);
-      const y = clamp(event.clientY / window.innerHeight, 0, 1);
-      setPointer({ x, y });
+      latestPoint.current.x = clamp(event.clientX / window.innerWidth, 0, 1);
+      latestPoint.current.y = clamp(event.clientY / window.innerHeight, 0, 1);
+      if (frameRef.current === null) {
+        frameRef.current = requestAnimationFrame(() => {
+          setPointer({ x: latestPoint.current.x, y: latestPoint.current.y });
+          frameRef.current = null;
+        });
+      }
     };
 
     window.addEventListener("pointermove", onMove, { passive: true });
-    return () => window.removeEventListener("pointermove", onMove);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+      }
+    };
   }, []);
 
   return pointer;
+}
+
+function usePrefersReducedMotion() {
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduceMotion(mediaQuery.matches);
+
+    const handleChange = (event: MediaQueryListEvent) => {
+      setReduceMotion(event.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  return reduceMotion;
 }
 
 function BackgroundBlob({ seed, className }: { seed: number; className: string }) {
@@ -210,10 +240,15 @@ function TinyStar({ item }: { item: ReturnType<typeof createRandomizedItems>[num
 
 export function AnimatedBackground() {
   const [mounted, setMounted] = useState(false);
+  const reduceMotion = usePrefersReducedMotion();
   const pointer = usePointer();
-  const particles = useMemo(() => createRandomizedItems(PARTICLE_COUNT, 17), []);
-  const stars = useMemo(() => createRandomizedItems(STAR_COUNT, 97), []);
-  const blobs = useMemo(() => createRandomizedItems(BLOB_COUNT, 173), []);
+  const particleCount = reduceMotion ? Math.max(10, Math.floor(PARTICLE_COUNT * 0.6)) : PARTICLE_COUNT;
+  const starCount = reduceMotion ? Math.max(12, Math.floor(STAR_COUNT * 0.5)) : STAR_COUNT;
+  const blobCount = reduceMotion ? Math.max(1, Math.floor(BLOB_COUNT * 0.5)) : BLOB_COUNT;
+
+  const particles = useMemo(() => createRandomizedItems(particleCount, 17), [particleCount]);
+  const stars = useMemo(() => createRandomizedItems(starCount, 97), [starCount]);
+  const blobs = useMemo(() => createRandomizedItems(blobCount, 173), [blobCount]);
 
   useEffect(() => {
     setMounted(true);
@@ -225,8 +260,8 @@ export function AnimatedBackground() {
 
   const spotlightX = `${pointer.x * 100}%`;
   const spotlightY = `${pointer.y * 100}%`;
-  const parallaxX = (pointer.x - 0.5) * 20;
-  const parallaxY = (pointer.y - 0.5) * 16;
+  const parallaxX = reduceMotion ? 0 : (pointer.x - 0.5) * 20;
+  const parallaxY = reduceMotion ? 0 : (pointer.y - 0.5) * 16;
 
   return (
     <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#0b1120]" aria-hidden="true">

@@ -8,6 +8,11 @@ import { Features } from "@/components/landing/features";
 import { Footer } from "@/components/layout/footer";
 import {getQuestions} from "@/lib/api/questions";
 
+const AnimatedBackground = dynamic(
+  () => import("@/components/layout/background-particles"),
+  { ssr: false }
+);
+
 const Benefits = dynamic(() => import("@/components/landing/benefits").then((mod) => mod.Benefits), {
   ssr: false,
 });
@@ -32,6 +37,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-bg-primary">
       <Navbar />
+      <AnimatedBackground />
       <Hero />
       <About />
       <Features />
