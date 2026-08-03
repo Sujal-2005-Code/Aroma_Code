@@ -1,8 +1,16 @@
 import { api } from "@/lib/api/client";
+import { useSyncExternalStore } from "react";
 
 export type AuthUser = { full_name: string; email: string; role: "student" | "admin" | "recruiter" };
 
 type LoginResponse = { access_token: string; role: AuthUser["role"]; full_name: string };
+
+const AUTH_CHANGED_EVENT = "aroma-auth-changed";
+
+function notifyAuthChanged() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
+}
 
 export async function login(email: string, password: string) {
   const result = await api<LoginResponse>("/login", {
@@ -11,6 +19,7 @@ export async function login(email: string, password: string) {
   });
   localStorage.setItem("aroma_access_token", result.access_token);
   localStorage.setItem("aroma_user", JSON.stringify({ email, full_name: result.full_name, role: result.role }));
+  notifyAuthChanged();
   return result;
 }
 
@@ -30,6 +39,43 @@ export function currentUser(): AuthUser | null {
 export function logout() {
   localStorage.removeItem("aroma_access_token");
   localStorage.removeItem("aroma_user");
+  notifyAuthChanged();
+}
+
+let cachedUserRaw: string | null | undefined;
+let cachedUserParsed: AuthUser | null = null;
+
+function getCurrentUserSnapshot(): AuthUser | null {
+  if (typeof window === "undefined") return null;
+  const raw = localStorage.getItem("aroma_user");
+  if (raw === cachedUserRaw) return cachedUserParsed;
+  cachedUserRaw = raw;
+  if (!raw) {
+    cachedUserParsed = null;
+    return null;
+  }
+  try {
+    cachedUserParsed = JSON.parse(raw) as AuthUser;
+    return cachedUserParsed;
+  } catch {
+    cachedUserParsed = null;
+    return null;
+  }
+}
+
+function subscribeAuth(onStoreChange: () => void) {
+  if (typeof window === "undefined") return () => {};
+  const handler = () => onStoreChange();
+  window.addEventListener(AUTH_CHANGED_EVENT, handler);
+  window.addEventListener("storage", handler);
+  return () => {
+    window.removeEventListener(AUTH_CHANGED_EVENT, handler);
+    window.removeEventListener("storage", handler);
+  };
+}
+
+export function useCurrentUser() {
+  return useSyncExternalStore(subscribeAuth, getCurrentUserSnapshot, () => null);
 }
 
 export async function sendOtp(email: string, purpose: "email_verification" | "password_reset" = "email_verification") {

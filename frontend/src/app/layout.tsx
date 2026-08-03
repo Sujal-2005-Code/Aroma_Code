@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
-
-
+import AnimatedBackground from "@/components/layout/background-particles";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import SmoothScroll from "@/components/layout/smooth-scroll";
 
 export const metadata: Metadata = {
   title: "AROMA – AI Powered Talent Intelligence Platform",
@@ -14,11 +15,22 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth">
-      <body>
-        {children}
+    <html lang="en" data-scroll-behavior="smooth" className="font-sans">
+      <body className="relative isolate">
+        <SmoothScroll />
+        <AnimatedBackground />
+        <div className="relative z-10">
+          <TooltipProvider>{children}</TooltipProvider>
+        </div>
       </body>
     </html>
   );

@@ -87,7 +87,7 @@ export default function LoginPage() {
                     if (cred) { setEmail(cred.email); setPassword(cred.password); }
                   }}
                   className={cn(
-                    "py-2.5 rounded-xl text-sm font-medium border transition-all",
+                    "premium-btn py-2.5 rounded-xl text-sm font-medium border",
                     selectedRole === role.id ? `${role.bg} ${role.color}` : "glass-card text-text-muted hover:text-text-primary"
                   )}
                 >
@@ -169,7 +169,7 @@ export default function LoginPage() {
                       setEmail(cred.email);
                       setPassword(cred.password);
                     }}
-                    className="w-full glass-card rounded-lg px-3 py-2 flex items-center justify-between hover:bg-glass-strong transition-colors"
+                    className="premium-btn w-full glass-card rounded-lg px-3 py-2 flex items-center justify-between hover:bg-glass-strong"
                   >
                     <span className="text-xs font-medium text-text-primary">{cred.role}</span>
                     <span className="text-xs text-text-muted">{cred.email}</span>

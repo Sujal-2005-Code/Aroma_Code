@@ -1,19 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import Image from "next/image";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
 import { Menu, X, Bell, Search, Sparkles, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { logout, currentUser } from "@/lib/auth";
+import { logout, useCurrentUser } from "@/lib/auth";
+import { dashboardMenuItems } from "@/components/layout/dashboard-menu";
 
 const navLinks = [
+  { label: "Home", href: "/#home" },
+  { label: "About", href: "/#about" },
   { label: "Features", href: "/#features" },
   { label: "Students", href: "/#students" },
   { label: "Recruiters", href: "/#recruiters" },
   { label: "Pricing", href: "/#pricing" },
+  { label: "Contact", href: "/#contact" },
 ];
 
 const dashboardLinks = [
@@ -26,16 +32,15 @@ const dashboardLinks = [
 
 export function Navbar({ isDashboard = false }: { isDashboard?: boolean }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  const user = useCurrentUser();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const user = mounted ? currentUser() : null;
-
-  const links = isDashboard ? dashboardLinks : navLinks;
+  const desktopLinks = isDashboard ? dashboardLinks : navLinks;
+  const mobileLinks: Array<{ label: string; href: string; icon?: LucideIcon }> = isDashboard
+    ? dashboardMenuItems
+        .filter((item) => !item.adminOnly || user?.role === "admin")
+        .map(({ label, href, icon }) => ({ label, href, icon }))
+    : navLinks;
 
   return (
     <motion.header
@@ -44,23 +49,32 @@ export function Navbar({ isDashboard = false }: { isDashboard?: boolean }) {
       transition={{ duration: 0.4 }}
       className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-border-subtle"
     >
-      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-12">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <img
-              src="/assets/aroma-logo.png"
-              alt="Aroma Logo"
-              width={36}
-              height={36}
-              className="rounded-xl shadow-lg shadow-brand-orange/20 group-hover:shadow-brand-orange/40 transition-shadow"
-            />
-            <span className="text-xl font-bold gradient-text hidden sm:block">AROMA</span>
+          <Link href="/" className="premium-btn group flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-3 py-2 hover:border-brand-orange/30 hover:bg-white/10 hover:shadow-[0_10px_30px_rgba(252,143,15,0.16)]">
+            <motion.div
+              whileHover={{ rotateY: 180, rotateX: 10, scale: 1.08 }}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
+              style={{ transformStyle: "preserve-3d" }}
+              className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-orange/20 to-brand-pink/20 p-1 shadow-inner shadow-brand-orange/20"
+            >
+              <Image
+                src="/assets/Robot.png"
+                alt="Aroma Logo"
+                width={32}
+                height={32}
+                className="rounded-xl object-contain"
+              />
+            </motion.div>
+            <span className="hidden text-lg font-semibold tracking-[0.24em] text-text-primary transition-all duration-300 group-hover:text-brand-orange sm:block">
+              AROMA
+            </span>
           </Link>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-1">
-            {links.map((link) => (
+            {desktopLinks.map((link) => (
               <Link
                 key={link.label}
                 href={link.href}
@@ -134,14 +148,18 @@ export function Navbar({ isDashboard = false }: { isDashboard?: boolean }) {
             transition={{ duration: 0.25 }}
             className="md:hidden border-t border-border-subtle overflow-hidden"
           >
-            <div className="px-4 py-4 space-y-1 bg-bg-surface/95 backdrop-blur-xl">
-              {links.map((link) => (
+            <div className="max-h-[calc(100svh-4rem)] overflow-y-auto px-4 py-4 space-y-1 bg-bg-surface/95 backdrop-blur-xl">
+              {mobileLinks.map((link) => (
                 <Link
                   key={link.label}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className="block px-4 py-3 text-sm text-text-muted hover:text-text-primary hover:bg-glass rounded-lg transition-colors"
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 text-sm text-text-muted hover:text-text-primary hover:bg-glass rounded-lg transition-colors",
+                    isDashboard && "py-3.5"
+                  )}
                 >
+                  {link.icon && <link.icon className="w-4 h-4 text-text-muted/80" />}
                   {link.label}
                 </Link>
               ))}

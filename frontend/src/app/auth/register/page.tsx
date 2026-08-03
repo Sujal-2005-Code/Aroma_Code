@@ -102,7 +102,7 @@ export default function RegisterPage() {
                           type="button"
                           onClick={() => setSelectedRole(role.id)}
                           className={cn(
-                            "w-full flex items-center gap-4 rounded-xl p-4 border transition-all text-left",
+                            "premium-btn w-full flex items-center gap-4 rounded-xl p-4 border text-left",
                             selectedRole === role.id
                               ? "bg-brand-orange/10 border-brand-orange/30 text-brand-orange"
                               : "glass-card text-text-muted hover:text-text-primary"

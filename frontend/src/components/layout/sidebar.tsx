@@ -4,45 +4,17 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  LayoutDashboard, FileText, Code2, Briefcase, Bot, Award,
-  GitBranch, Palette, Target, Users, Video, Settings,
-  ChevronLeft, ChevronRight, BarChart3, Shield,
-  FolderGit2
-} from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { currentUser } from "@/lib/auth";
-
-const menuItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Assessments", href: "/assessments", icon: BarChart3 },
-  { label: "History", href: "/student/history", icon: ChevronRight },
-  { label: "Resume Analyzer", href: "/resume", icon: FileText },
-  { label: "Coding Platform", href: "/coding", icon: Code2 },
-  { label: "Skill Passport", href: "/passport", icon: Award },
-  { label: "Portfolio Builder", href: "/portfolio", icon: Palette },
-  { label: "Job Portal", href: "/jobs", icon: Briefcase },
-  { label: "AI Mentor", href: "/mentor", icon: Bot },
-  { label: "GitHub Analytics", href: "/github", icon: GitBranch },
-  { label: "Skill Gap", href: "/skill-gap", icon: Target },
-  { label: "Project Verify", href: "/project-verify", icon: FolderGit2 },
-  { label: "Mock Interview", href: "/interview", icon: Video },
-  { label: "Recruiter", href: "/recruiter", icon: Users },
-  { label: "Admin", href: "/admin", icon: Shield },
-  { label: "Settings", href: "/settings", icon: Settings },
-];
+import { useCurrentUser } from "@/lib/auth";
+import { dashboardMenuItems } from "@/components/layout/dashboard-menu";
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
-  const user = currentUser();
+  const user = useCurrentUser();
 
-  const filteredMenuItems = menuItems.filter((item) => {
-    if (item.label === "Admin") {
-      return user?.role === "admin";
-    }
-    return true;
-  });
+  const filteredMenuItems = dashboardMenuItems.filter((item) => !item.adminOnly || user?.role === "admin");
 
   return (
     <motion.aside
