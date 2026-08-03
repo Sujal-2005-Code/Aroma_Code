@@ -6,6 +6,7 @@ import { TypeAnimation } from "react-type-animation";
 import { Sparkles, ArrowRight, Play, Zap, Shield, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import asset from "@/lib/asset";
 
 const typingTexts = ["Resume Score", "Skill Passport", "Career Roadmap", "Interview Prep", "Code Reviews"];
 

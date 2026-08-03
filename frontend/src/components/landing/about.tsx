@@ -2,6 +2,7 @@
 
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Link from "next/link";
+import asset from "@/lib/asset";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

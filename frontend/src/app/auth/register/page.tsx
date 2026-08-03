@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { register } from "@/lib/auth";
 import { ApiError } from "@/lib/api/client";
+import asset from "@/lib/asset";
 
 const roles = [
   { id: "student", label: "Candidate", icon: GraduationCap, desc: "Looking for opportunities" },

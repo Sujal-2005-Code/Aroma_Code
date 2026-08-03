@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { login } from "@/lib/auth";
 import { ApiError } from "@/lib/api/client";
+import asset from "@/lib/asset";
 
 const roles = [
   { id: "student", label: "Candidate", color: "text-brand-orange", bg: "bg-brand-orange/10 border-brand-orange/30" },
