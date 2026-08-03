@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import asset from "@/lib/asset";
 import Link from "next/link";
 import { Sparkles, Globe, ExternalLink, MessageCircle, Mail } from "lucide-react";
 
@@ -31,7 +32,7 @@ export function Footer() {
 
               <div className="flex items-center gap-3">
                 <Image
-                  src="/assets/aroma-logo.png"
+                  src={asset("/assets/aroma-logo.png")}
                   alt="Aroma Logo"
                   width={44}
                   height={44}

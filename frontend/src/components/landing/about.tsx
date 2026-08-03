@@ -127,7 +127,7 @@ export function About() {
 
   {/* Robot */}
   <motion.img
-    src="/assets/Robot.png"
+    src={asset("/assets/Robot.png")}
     alt="AROMA Robot"
     className="relative z-10 w-full max-w-[720px] object-contain scale-125 drop-shadow-[0_30px_60px_rgba(255,120,40,0.35)]"
     animate={{

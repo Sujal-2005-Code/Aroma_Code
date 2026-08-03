@@ -60,13 +60,13 @@ export default function LoginPage() {
         {/* Logo */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 group">
-            <img
-              src="/assets/aroma-logo.png"
-              alt="Aroma Logo"
-              width={48}
-              height={48}
-              className="rounded-2xl shadow-lg shadow-brand-orange/20"
-            />
+                <img
+                  src={asset("/assets/aroma-logo.png")}
+                  alt="Aroma Logo"
+                  width={48}
+                  height={48}
+                  className="rounded-2xl shadow-lg shadow-brand-orange/20"
+                />
           </Link>
           <p className="text-text-muted mt-2 text-sm">AI-Powered Talent Intelligence Platform</p>
         </motion.div>

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import asset from "@/lib/asset";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -60,7 +61,7 @@ export function Navbar({ isDashboard = false }: { isDashboard?: boolean }) {
               className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-orange/20 to-brand-pink/20 p-1 shadow-inner shadow-brand-orange/20"
             >
               <Image
-                src="/assets/aroma-logo.png"
+                src={asset("/assets/aroma-logo.png")}
                 alt="Aroma Logo"
                 width={32}
                 height={32}

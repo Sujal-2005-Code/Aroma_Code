@@ -60,8 +60,8 @@ export default function RegisterPage() {
       <div className="relative z-10 w-full max-w-md px-4">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3">
-            <img
-              src="/assets/aroma-logo.png"
+              <img
+              src={asset("/assets/aroma-logo.png")}
               alt="Aroma Logo"
               width={48}
               height={48}

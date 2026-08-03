@@ -57,7 +57,7 @@ export function Hero() {
           preload="none"
           className="absolute inset-0 h-full w-full object-cover"
         >
-          <source src="/videos/hero-background.mp4" type="video/mp4" />
+          <source src={asset("/videos/hero-background.mp4")} type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-gradient-to-br from-brand-orange/10 via-bg-primary to-brand-pink/10 animate-gradient" />
         <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-brand-orange/10 blur-[120px] animate-pulse-glow" />
