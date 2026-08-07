@@ -78,6 +78,102 @@ export interface Certificate {
   credentialId: string;
 }
 
+export type SkillLevel = "Beginner" | "Intermediate" | "Advanced" | "Expert";
+export type EmploymentType = "Full-time" | "Part-time" | "Contract" | "Internship" | "Freelance" | "Remote" | "Hybrid";
+export type LocationType = "On-site" | "Remote" | "Hybrid";
+
+export interface ProfileInfo {
+  fullName: string;
+  headline: string;
+  tagline: string;
+  bio: string;
+  location: string;
+  website: string;
+  phone: string;
+  birthday: string;
+  languages: string[];
+  interests: string[];
+  avatarUrl?: string;
+}
+
+export interface ExperienceEntry {
+  id: string;
+  company: string;
+  logoText: string;
+  logoColor: string;
+  jobTitle: string;
+  employmentType: EmploymentType;
+  locationType: LocationType;
+  location: string;
+  startDate: string;
+  endDate?: string;
+  currentlyWorking: boolean;
+  description: string;
+  skills: string[];
+}
+
+export interface AchievementEntry {
+  id: string;
+  title: string;
+  issuer: string;
+  type: string;
+  emoji: string;
+  date: string;
+  description: string;
+  url?: string;
+  colorClass: string;
+}
+
+export interface EducationEntry {
+  id: string;
+  school: string;
+  degree: string;
+  fieldOfStudy: string;
+  startDate: string;
+  endDate?: string;
+  currentlyStudying: boolean;
+  grade: string;
+  activities: string[];
+  description: string;
+  logoText: string;
+  logoColor: string;
+}
+
+export interface SocialLink {
+  id: string;
+  platform: string;
+  username: string;
+  url: string;
+  brandColor: string;
+  icon: string;
+}
+
+export interface SkillEntry {
+  id: string;
+  category: string;
+  name: string;
+  verified: boolean;
+  level: SkillLevel;
+  endorsements: number;
+  scores: {
+    assessment: number;
+    github: number;
+    coding: number;
+    passport: number;
+    resume: number;
+    portfolio: number;
+  };
+  overall: number;
+}
+
+export interface PassportSummary {
+  score: number;
+  totalSkills: number;
+  verifiedSkills: number;
+  endorsements: number;
+  averageLevel: number;
+}
+
 export interface Candidate {
   id: string;
   name: string;

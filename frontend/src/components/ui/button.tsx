@@ -1,7 +1,7 @@
-import { Button as ButtonPrimitive } from "@base-ui/react/button"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
   "premium-btn group/button inline-flex shrink-0 items-center justify-center rounded-full border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap outline-none select-none shadow-sm focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -9,6 +9,10 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-gradient-to-r from-brand-orange to-brand-pink text-white shadow-[0_10px_25px_rgba(252,143,15,0.22)] hover:from-brand-orange/90 hover:to-brand-pink/90",
+        primary:
+          "bg-gradient-to-r from-violet-600 via-fuchsia-500 to-cyan-500 text-white shadow-[0_10px_40px_-12px_rgba(139,92,246,0.9)] hover:shadow-[0_18px_50px_-10px_rgba(139,92,246,1)] hover:brightness-110",
+        glass:
+          "border border-white/10 bg-white/5 text-text-primary backdrop-blur-xl hover:bg-white/10 hover:text-foreground",
         outline:
           "border-white/10 bg-white/5 text-text-primary backdrop-blur-xl hover:bg-white/10 hover:text-foreground",
         secondary:
@@ -17,6 +21,10 @@ const buttonVariants = cva(
           "border-transparent bg-transparent text-text-primary shadow-none hover:bg-white/10 hover:text-foreground",
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
+        danger:
+          "border border-rose-500/30 bg-rose-500/10 text-rose-200 hover:bg-rose-500/20 hover:text-rose-100",
+        success:
+          "border border-emerald-400/30 bg-emerald-500/12 text-emerald-200 hover:bg-emerald-500/20",
         link: "overflow-visible bg-transparent text-primary shadow-none hover:translate-y-0 hover:scale-100 active:scale-100 underline-offset-4 hover:underline",
       },
       size: {
@@ -39,21 +47,27 @@ const buttonVariants = cva(
       size: "default",
     },
   }
-)
+);
 
-function Button({
-  className,
-  variant = "default",
-  size = "default",
-  ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
-  return (
-    <ButtonPrimitive
-      data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
-  )
-}
+export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & VariantProps<typeof buttonVariants>;
 
-export { Button, buttonVariants }
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, type = "button", children, ...props }, ref) => {
+    return (
+      <button
+        type={type}
+        ref={ref}
+        data-slot="button"
+        className={cn(buttonVariants({ variant, size, className }))}
+        suppressHydrationWarning
+        {...props}
+      >
+        {children}
+      </button>
+    );
+  }
+);
+
+Button.displayName = "Button";
+
+export { Button, buttonVariants };

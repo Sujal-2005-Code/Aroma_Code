@@ -20,6 +20,8 @@ from app.routes.export import router as export_router
 from app.routes.admin_students import router as admin_students_router
 from app.routes.jobs import router as jobs_router
 from app.routes.career import router as career_router
+from app.routes.coding_platform import router as coding_platform_router
+from app.routes.ai_assessment import router as ai_assessment_router
 
 
 
@@ -30,15 +32,18 @@ app = FastAPI(
 
 origins = [
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
 ]
-
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Register Routers
@@ -61,6 +66,8 @@ app.include_router(export_router)
 app.include_router(admin_students_router)
 app.include_router(jobs_router)
 app.include_router(career_router)
+app.include_router(coding_platform_router)
+app.include_router(ai_assessment_router)
 
 
 @app.get("/")

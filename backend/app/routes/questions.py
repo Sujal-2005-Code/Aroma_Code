@@ -9,22 +9,7 @@ from app.dependencies.auth import admin_required
 
 router = APIRouter()
 
-fallback_questions = [
-    {
-        "_id": "sample-question-1",
-        "title": "Sample Question",
-        "description": "A fallback question returned when the database is unavailable.",
-        "topic": "General",
-        "difficulty": "easy",
-        "question_type": "theory",
-        "tags": ["sample"],
-        "options": [],
-        "correct_answer": None,
-        "explanation": None,
-        "sample_input": None,
-        "sample_output": None,
-    }
-]
+fallback_questions = []
 
 
 def get_questions_collection():
@@ -164,7 +149,7 @@ def get_questions_by_type(question_type: str):
     for question in collection.find({"question_type": question_type}):
         questions.append(_serialize_question(question))
 
-    return questions    
+    return questions
 
 
 @router.get("/questions/search")

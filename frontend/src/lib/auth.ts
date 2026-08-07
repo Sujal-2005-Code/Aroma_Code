@@ -1,5 +1,5 @@
-import { api } from "@/lib/api/client";
-import { useSyncExternalStore } from "react";
+import { api, getAccessToken } from "@/lib/api/client";
+import { useEffect, useSyncExternalStore } from "react";
 
 export type AuthUser = { full_name: string; email: string; role: "student" | "admin" | "recruiter" };
 
@@ -32,6 +32,8 @@ export async function register(full_name: string, email: string, password: strin
 
 export function currentUser(): AuthUser | null {
   if (typeof window === "undefined") return null;
+  const token = getAccessToken();
+  if (!token) return null;
   const raw = localStorage.getItem("aroma_user");
   try { return raw ? JSON.parse(raw) as AuthUser : null; } catch { return null; }
 }
@@ -47,6 +49,8 @@ let cachedUserParsed: AuthUser | null = null;
 
 function getCurrentUserSnapshot(): AuthUser | null {
   if (typeof window === "undefined") return null;
+  const token = getAccessToken();
+  if (!token) return null;
   const raw = localStorage.getItem("aroma_user");
   if (raw === cachedUserRaw) return cachedUserParsed;
   cachedUserRaw = raw;
@@ -75,7 +79,17 @@ function subscribeAuth(onStoreChange: () => void) {
 }
 
 export function useCurrentUser() {
-  return useSyncExternalStore(subscribeAuth, getCurrentUserSnapshot, () => null);
+  const user = useSyncExternalStore(subscribeAuth, getCurrentUserSnapshot, () => null);
+
+  useEffect(() => {
+    // Expired credentials are removed after commit, never from the render-time
+    // external-store snapshot used by Navbar.
+    if (!getAccessToken() && localStorage.getItem("aroma_access_token")) {
+      logout();
+    }
+  }, []);
+
+  return user;
 }
 
 export async function sendOtp(email: string, purpose: "email_verification" | "password_reset" = "email_verification") {

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { logout, useCurrentUser } from "@/lib/auth";
 import { dashboardMenuItems } from "@/components/layout/dashboard-menu";
+import { useHydrated } from "@/lib/use-hydrated";
 
 const navLinks = [
   { label: "Home", href: "/#home" },
@@ -33,14 +34,16 @@ const dashboardLinks = [
 
 export function Navbar({ isDashboard = false }: { isDashboard?: boolean }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const mounted = useHydrated();
   const router = useRouter();
   const user = useCurrentUser();
 
   const desktopLinks = isDashboard ? dashboardLinks : navLinks;
   const mobileLinks: Array<{ label: string; href: string; icon?: LucideIcon }> = isDashboard
-    ? dashboardMenuItems
-        .filter((item) => !item.adminOnly || user?.role === "admin")
-        .map(({ label, href, icon }) => ({ label, href, icon }))
+    ? (mounted
+        ? dashboardMenuItems.filter((item) => !item.adminOnly || user?.role === "admin")
+        : dashboardMenuItems.filter((item) => !item.adminOnly)
+      ).map(({ label, href, icon }) => ({ label, href, icon }))
     : navLinks;
 
   return (

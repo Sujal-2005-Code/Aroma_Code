@@ -16,6 +16,7 @@ import {
   Shield,
   ChevronRight,
   FolderGit2,
+  User,
 } from "lucide-react";
 
 export type DashboardMenuItem = {
@@ -27,12 +28,13 @@ export type DashboardMenuItem = {
 
 export const dashboardMenuItems: DashboardMenuItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Profile & Passport", href: "/student/profile", icon: User },
   { label: "Assessments", href: "/assessments", icon: BarChart3 },
   { label: "History", href: "/student/history", icon: ChevronRight },
   { label: "Resume Analyzer", href: "/resume", icon: FileText },
   { label: "Coding Platform", href: "/coding", icon: Code2 },
-  { label: "Skill Passport", href: "/passport", icon: Award },
   { label: "Portfolio Builder", href: "/portfolio", icon: Palette },
+  { label: "Portfolio Analyser", href: "/portfolio-analyser", icon: FileText },
   { label: "Job Portal", href: "/jobs", icon: Briefcase },
   { label: "AI Mentor", href: "/mentor", icon: Bot },
   { label: "GitHub Analytics", href: "/github", icon: GitBranch },

@@ -1,34 +1,197 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Search, Users, XCircle } from "lucide-react";
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { getRecruiterCandidates, type RecruiterCandidate, updateCandidateStatus } from "@/lib/api/resources";
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Briefcase,
+  Plus,
+  Users,
+  TrendingUp,
+  Calendar,
+  Building2,
+  Search,
+  Filter,
+  X
+} from 'lucide-react';
+import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import JobPostForm from '@/components/recruiter/JobPostForm';
+import JobsList from '@/components/recruiter/JobsList';
+import ApplicantsList from '@/components/recruiter/ApplicantsList';
+import DashboardStats from '@/components/recruiter/DashboardStats';
 
-const statusClass: Record<RecruiterCandidate["status"], string> = { New: "bg-blue-500/10 text-blue-400", Shortlisted: "bg-amber-500/10 text-amber-400", Interview: "bg-purple-500/10 text-purple-400", Hired: "bg-emerald-500/10 text-emerald-400", Rejected: "bg-red-500/10 text-red-400" };
+export default function RecruiterDashboard() {
+  const [activeTab, setActiveTab] = useState<'overview' | 'jobs' | 'applicants'>('overview');
+  const [showJobForm, setShowJobForm] = useState(false);
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
+  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-export default function RecruiterPage() {
-  const [candidates, setCandidates] = useState<RecruiterCandidate[]>([]);
-  const [query, setQuery] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => { 
-    getRecruiterCandidates().then((cands) => {
-      const mockCandidates: RecruiterCandidate[] = cands && cands.length > 0 ? cands : [
-        { id: "c1", name: "Alice Smith", email: "alice@example.com", location: "Remote", title: "Frontend Developer", skills: ["React", "TypeScript", "Tailwind"], passport_score: 92, status: "New" },
-        { id: "c2", name: "Bob Johnson", email: "bob@example.com", location: "Remote", title: "Backend Developer", skills: ["Node.js", "Express", "MongoDB"], passport_score: 88, status: "Shortlisted" },
-        { id: "c3", name: "Charlie Davis", email: "charlie@example.com", location: "Remote", title: "Full Stack Engineer", skills: ["React", "Python", "PostgreSQL"], passport_score: 95, status: "Interview" },
-        { id: "c4", name: "Diana Prince", email: "diana@example.com", location: "Remote", title: "UI/UX Designer", skills: ["Figma", "CSS", "HTML"], passport_score: 85, status: "Hired" },
-        { id: "c5", name: "Evan Wright", email: "evan@example.com", location: "Remote", title: "Data Scientist", skills: ["Python", "Machine Learning", "SQL"], passport_score: 72, status: "Rejected" },
-        { id: "c6", name: "Fiona Gallagher", email: "fiona@example.com", location: "Remote", title: "DevOps Engineer", skills: ["Docker", "Kubernetes", "AWS"], passport_score: 89, status: "New" },
-        { id: "c7", name: "George Miller", email: "george@example.com", location: "Remote", title: "Product Manager", skills: ["Agile", "Scrum", "Jira"], passport_score: 91, status: "Shortlisted" },
-      ];
-      setCandidates(mockCandidates);
-    }).catch((cause) => setError(cause instanceof Error ? cause.message : "Could not load candidates.")); 
+  const fetchJobs = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+      const response = await fetch(`${apiUrl}/career/jobs`);
+      const data = await response.json();
+      setJobs(data);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+      setJobs([]); // Set empty array on error
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchApplications = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+      const response = await fetch(`${apiUrl}/career/recruiter/candidates`);
+      const data = await response.json();
+      setApplications(data);
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+      setApplications([]); // Set empty array on error
+    }
+  };
+
+  useEffect(() => {
+    void Promise.resolve().then(() => Promise.all([fetchJobs(), fetchApplications()]));
   }, []);
-  const visible = useMemo(() => candidates.filter((candidate) => `${candidate.name} ${candidate.title} ${candidate.skills.join(" ")}`.toLowerCase().includes(query.toLowerCase())), [candidates, query]);
-  const setStatus = (id: string, status: RecruiterCandidate["status"]) => updateCandidateStatus(id, status).then(() => setCandidates((items) => items.map((item) => item.id === id ? { ...item, status } : item))).catch((cause) => setError(cause instanceof Error ? cause.message : "Could not update candidate."));
-  return <DashboardLayout><div className="mx-auto max-w-[1400px] space-y-6"><div><h1 className="text-2xl font-bold">Recruiter Dashboard</h1><p className="text-text-muted">Search and manage verified candidate outcomes.</p></div>{error && <Card className="text-red-400">{error}</Card>}<div className="grid grid-cols-2 gap-4 md:grid-cols-4">{[["Candidates", candidates.length], ["Shortlisted", candidates.filter((item) => item.status === "Shortlisted").length], ["Interviews", candidates.filter((item) => item.status === "Interview").length], ["Hired", candidates.filter((item) => item.status === "Hired").length]].map(([label, value]) => <Card key={String(label)} className="flex items-center gap-3"><Users className="h-5 w-5 text-brand-orange" /><div><p className="text-xl font-bold">{value}</p><p className="text-xs text-text-muted">{label}</p></div></Card>)}</div><Card><div className="relative mb-5"><Search className="absolute left-3 top-3 h-4 w-4 text-text-muted" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search candidates by name, role, or skills…" className="w-full rounded-xl border border-border-subtle bg-glass py-2.5 pl-9 pr-3 text-sm outline-none focus:border-brand-orange/30" /></div><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b border-border-subtle text-left text-xs text-text-muted"><th className="p-3">Candidate</th><th className="p-3">Role</th><th className="p-3">Skills</th><th className="p-3 text-center">Score</th><th className="p-3 text-center">Status</th><th className="p-3 text-right">Actions</th></tr></thead><tbody>{visible.map((candidate) => <tr key={candidate.id} className="border-b border-border-subtle"><td className="p-3"><p className="font-medium">{candidate.name}</p><p className="text-xs text-text-muted">{candidate.email}</p></td><td className="p-3 text-text-muted">{candidate.title}</td><td className="p-3">{candidate.skills.map((skill) => <Badge key={skill} variant="secondary" className="mr-1">{skill}</Badge>)}</td><td className="p-3 text-center font-bold">{candidate.passport_score}%</td><td className="p-3 text-center"><Badge className={statusClass[candidate.status]}>{candidate.status}</Badge></td><td className="p-3 text-right"><Button variant="ghost" size="sm" onClick={() => setStatus(candidate.id, "Shortlisted")} aria-label="Shortlist"><CheckCircle2 className="h-4 w-4 text-emerald-400" /></Button><Button variant="ghost" size="sm" onClick={() => setStatus(candidate.id, "Rejected")} aria-label="Reject"><XCircle className="h-4 w-4 text-red-400" /></Button></td></tr>)}</tbody></table>{!visible.length && <p className="p-5 text-center text-sm text-text-muted">No matching candidates.</p>}</div></Card></div></DashboardLayout>;
+
+  const handleJobCreated = () => {
+    setShowJobForm(false);
+    fetchJobs();
+  };
+
+  const handleViewApplicants = (job: any) => {
+    setSelectedJob(job);
+    setActiveTab('applicants');
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        {/* Animated background */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+          <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+        </div>
+
+        <div className="relative z-10">
+          {/* Header */}
+          <header className="border-b border-white/10 backdrop-blur-xl bg-white/5">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <Building2 className="w-7 h-7 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-2xl font-bold text-white">AROMA Recruiter</h1>
+                    <p className="text-sm text-purple-200">Talent Management Dashboard</p>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowJobForm(true)}
+                  className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/50 hover:shadow-xl hover:shadow-purple-500/60 transition-all"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>Post New Job</span>
+                </motion.button>
+              </div>
+            </div>
+          </header>
+
+          {/* Navigation Tabs */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+            <div className="flex space-x-4 border-b border-white/10">
+              {[
+                { id: 'overview', label: 'Overview', icon: TrendingUp },
+                { id: 'jobs', label: 'Posted Jobs', icon: Briefcase },
+                { id: 'applicants', label: 'Applicants', icon: Users },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex items-center space-x-2 px-6 py-3 font-semibold transition-all relative ${
+                    activeTab === tab.id
+                      ? 'text-white'
+                      : 'text-purple-300 hover:text-white'
+                  }`}
+                >
+                  <tab.icon className="w-5 h-5" />
+                  <span>{tab.label}</span>
+                  {activeTab === tab.id && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500"
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <AnimatePresence mode="wait">
+              {activeTab === 'overview' && (
+                <motion.div
+                  key="overview"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                >
+                  <DashboardStats jobs={jobs} applications={applications} />
+                </motion.div>
+              )}
+
+              {activeTab === 'jobs' && (
+                <motion.div
+                  key="jobs"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                >
+                  <JobsList
+                    jobs={jobs}
+                    onViewApplicants={handleViewApplicants}
+                    onRefresh={fetchJobs}
+                  />
+                </motion.div>
+              )}
+
+              {activeTab === 'applicants' && (
+                <motion.div
+                  key="applicants"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                >
+                  <ApplicantsList
+                    applications={applications}
+                    jobs={jobs}
+                    selectedJob={selectedJob}
+                    onRefresh={fetchApplications}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Job Post Form Modal */}
+        <AnimatePresence>
+          {showJobForm && (
+            <JobPostForm
+              onClose={() => setShowJobForm(false)}
+              onSuccess={handleJobCreated}
+            />
+          )}
+        </AnimatePresence>
+      </div>
+    </DashboardLayout>
+  );
 }

@@ -3,22 +3,26 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCurrentUser } from "@/lib/auth";
 import { dashboardMenuItems } from "@/components/layout/dashboard-menu";
+import { useHydrated } from "@/lib/use-hydrated";
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const mounted = useHydrated();
   const pathname = usePathname();
   const user = useCurrentUser();
 
-  const filteredMenuItems = dashboardMenuItems.filter((item) => !item.adminOnly || user?.role === "admin");
+  const filteredMenuItems = mounted
+    ? dashboardMenuItems.filter((item) => !item.adminOnly || user?.role === "admin")
+    : dashboardMenuItems.filter((item) => !item.adminOnly);
 
   return (
     <motion.aside
-      initial={{ x: -20, opacity: 0 }}
+      initial={false}
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.25 }}
       className={cn(
@@ -57,6 +61,7 @@ export function Sidebar() {
 
       <div className="p-2 border-t border-border-subtle">
         <button
+          suppressHydrationWarning
           onClick={() => setCollapsed(!collapsed)}
           className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm text-text-muted hover:text-text-primary hover:bg-glass transition-colors"
           aria-label="Toggle sidebar"

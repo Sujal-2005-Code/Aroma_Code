@@ -1,4 +1,4 @@
-import { api } from "@/lib/api/client";
+import { api, ApiError } from "@/lib/api/client";
 import type { AdminStudent, Job, StudentDashboard } from "@/lib/api/types";
 
 export const getStudentDashboard = () => api<StudentDashboard>("/student/dashboard");
@@ -13,11 +13,61 @@ export type MentorMessage = { id: string; role: "user" | "assistant"; content: s
 export type PassportData = { name: string; email: string; passport_score: number; assessment_count: number; average_score: number; verified: boolean; skills: Array<{ skill: string; value: number }>; certificates: unknown[] };
 export type SkillGapData = { target_role: string; match_percentage: number; estimated_time: string; current_skills: Array<{ name: string; level: number; required: number }>; missing_skills: string[] };
 export type GithubData = { username: string; headline: string; stats: { repos: number; stars: number; followers: number; commits: number }; repositories: Array<{ name: string; description?: string; stars?: number; forks?: number; technologies?: string[] }>; languages: Array<{ name: string; percentage: number; color?: string }>; contributions: Array<{ date: string; count: number }>; monthly_commits: Array<{ month: string; commits: number }> };
+export type GithubAnalysis = {
+  success: true;
+  analysis_id: string;
+  data: {
+    overall_score: number;
+    repository_score: number;
+    documentation_score: number;
+    activity_score: number;
+    diversity_score: number;
+    summary: string;
+    strengths: string[];
+    weaknesses: string[];
+    recommendations: string[];
+    detected_skills: string[];
+    top_projects: string[];
+    repositories: Array<{ name: string; description?: string | null; language?: string | null; stars: number; forks: number; has_readme: boolean }>;
+    repository_reviews: Array<{
+      repository_name: string;
+      code_quality_score: number;
+      architecture_score: number;
+      readability_score: number;
+      maintainability_score: number;
+      testing_score: number;
+      documentation_score: number;
+      complexity_score: number;
+      developer_level: string;
+      project_difficulty: string;
+      summary: string;
+      strengths: string[];
+      issues: string[];
+      detected_skills: string[];
+      engineering_practices: string[];
+      recommendations: string[];
+      metrics: { total_files: number; source_files: number; sampled_lines: number; has_readme: boolean; has_tests: boolean; has_docker: boolean; has_ci: boolean; has_license: boolean; detected_frameworks: string[]; dependency_files: string[]; important_files: string[] };
+    }>;
+  };
+};
 export type RecruiterCandidate = { id: string; name: string; email: string; title: string; location: string; skills: string[]; passport_score: number; status: "New" | "Shortlisted" | "Interview" | "Hired" | "Rejected" };
 export const getMentorMessages = () => api<MentorMessage[]>("/mentor/messages");
 export const sendMentorMessage = (content: string) => api<MentorMessage>("/mentor/messages", { method: "POST", body: JSON.stringify({ content }) });
+export const getCareerGuidanceMessages = () => api<MentorMessage[]>("/mentor/messages");
+export const sendCareerGuidance = (content: string) => sendMentorMessage(content);
 export const getPassport = () => api<PassportData>("/passport");
 export const getSkillGap = () => api<SkillGapData>("/skill-gap");
 export const getGithubProfile = () => api<GithubData>("/github/profile");
+export const analyzeGithubProfile = (username: string) => api<GithubAnalysis>("/github/analyze", { method: "POST", body: JSON.stringify({ username }) });
 export const getRecruiterCandidates = () => api<RecruiterCandidate[]>("/recruiter/candidates");
 export const updateCandidateStatus = (id: string, status: RecruiterCandidate["status"]) => api<{ message: string }>(`/recruiter/candidates/${id}/status`, { method: "PUT", body: JSON.stringify({ status }) });
+
+export type Judge0Status = { id: number; description: string; };
+export type ExecuteCodeResponse = { success: boolean; stdout: string; stderr: string; compile_output: string; status: Judge0Status; time: string | number | null; memory: number | null; message?: string; };
+export type TestCaseResult = { test_case: number; passed: boolean; expected_output: string; actual_output: string; execution_time?: string | number | null; memory?: number | null; status?: string; };
+export type EvaluateResponse = { passed: number; failed: number; total: number; percentage: number; average_execution_time: number; maximum_memory: number; details: TestCaseResult[]; verdict?: string; analysis?: string | { summary?: string; explanation?: string; code_quality?: string; suggested_solution?: string }; };
+
+export const getRealCodingProblems = () => api<any[]>("/coding/problems");
+export const getRealCodingProblem = (slug: string) => api<any>(`/coding/problems/${slug}`);
+export const submitToRealJudge0 = (problemSlug: string, language: string, code: string) => api<EvaluateResponse>("/coding/submit", { method: "POST", body: JSON.stringify({ problemSlug, language, code }) });
+export const runRealCode = (language: string, source_code: string, stdin: string) => api<ExecuteCodeResponse>("/judge0/execute", { method: "POST", body: JSON.stringify({ language, source_code, stdin }) });

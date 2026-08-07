@@ -10,6 +10,10 @@ from app.routes import questions as questions_routes
 class QuestionsRouteTests(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
+        app.dependency_overrides[questions_routes.admin_required] = lambda: {
+            "role": "admin",
+            "email": "admin@example.com",
+        }
         questions_routes.fallback_questions[:] = [
             {
                 "_id": "sample-question-1",
@@ -26,6 +30,9 @@ class QuestionsRouteTests(unittest.TestCase):
                 "sample_output": None,
             }
         ]
+
+    def tearDown(self):
+        app.dependency_overrides.clear()
 
     def test_create_and_get_questions_when_database_is_unavailable(self):
         with patch("app.routes.questions.get_questions_collection", return_value=None):
@@ -67,7 +74,10 @@ class QuestionsRouteTests(unittest.TestCase):
             headers={"Origin": "http://localhost:3000"},
         )
         self.assertEqual(response.status_code, 200)
-        self.assertIn("*", response.headers.get("access-control-allow-origin", ""))
+        self.assertEqual(
+            response.headers.get("access-control-allow-origin"),
+            "http://localhost:3000",
+        )
 
 
 if __name__ == "__main__":

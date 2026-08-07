@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckSquare, ChevronLeft, ChevronRight, Clock, Flag, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -55,12 +55,12 @@ export default function AssessmentSessionPage({ params }: { params: Promise<{ id
 
   const question = assessment?.questions[index];
   const formattedTime = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
-  const statusFor = (questionId: string): Status => {
+  const statusFor = useCallback((questionId: string): Status => {
     const answer = answers[questionId];
     const answered = Array.isArray(answer) ? answer.length > 0 : typeof answer === "object" && answer !== null ? Boolean((answer as { source_code: string }).source_code.trim()) : Boolean(answer?.trim());
     return marked.has(questionId) ? answered ? "answered-marked" : "marked" : answered ? "answered" : "unattempted";
-  };
-  const answeredCount = useMemo(() => assessment?.questions.filter((item) => statusFor(item._id).startsWith("answered")).length ?? 0, [assessment, answers, marked]);
+  }, [answers, marked]);
+  const answeredCount = useMemo(() => assessment?.questions.filter((item) => statusFor(item._id).startsWith("answered")).length ?? 0, [assessment, statusFor]);
 
   const save = (questionId: string, answer: SubmissionAnswer) => {
     setAnswers((current) => ({ ...current, [questionId]: answer }));
