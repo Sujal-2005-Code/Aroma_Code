@@ -1,18 +1,40 @@
 const DEFAULT_API_URL = "http://127.0.0.1:8000";
 const REMOTE_API_URL = "https://aroma-eovs-codes.onrender.com";
 
-function getDefaultApiUrl() {
-  if (typeof window !== "undefined") {
-    const hostname = window.location.hostname;
-    if (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "0.0.0.0") {
-      return DEFAULT_API_URL;
-    }
-  }
-
-  return REMOTE_API_URL;
+function isLocalHostname(hostname: string) {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "0.0.0.0";
 }
 
-const apiUrlRaw = process.env.NEXT_PUBLIC_API_URL?.trim() || getDefaultApiUrl();
+function isLocalBrowser() {
+  return typeof window !== "undefined" && isLocalHostname(window.location.hostname);
+}
+
+function isLocalApiUrl(value: string) {
+  try {
+    return isLocalHostname(new URL(value).hostname);
+  } catch {
+    return false;
+  }
+}
+
+function getDefaultApiUrl() {
+  return isLocalBrowser() ? DEFAULT_API_URL : REMOTE_API_URL;
+}
+
+function resolveApiUrl() {
+  const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+
+  // NEXT_PUBLIC_* values are embedded into browser bundles at build time. A
+  // local value must never be used by a deployed website, where it refers to
+  // the visitor's machine rather than the hosted backend.
+  if (configuredUrl && (isLocalBrowser() || !isLocalApiUrl(configuredUrl))) {
+    return configuredUrl;
+  }
+
+  return getDefaultApiUrl();
+}
+
+const apiUrlRaw = resolveApiUrl();
 const normalizedApiUrl = apiUrlRaw.replace(/\/$/, "").replace(/^http:\/\/localhost(:|$)/, "http://127.0.0.1$1");
 const API_URL = normalizedApiUrl;
 

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState } from 'react';
+import { API_URL } from '@/lib/api/client';
 
 interface JobsListProps {
   jobs: any[];
@@ -27,8 +28,7 @@ export default function JobsList({ jobs, onViewApplicants, onRefresh }: JobsList
 
   const handleCloseJob = async (jobId: number) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-      await fetch(`${apiUrl}/career/jobs`, {
+      await fetch(`${API_URL}/career/jobs`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: jobId, status: 'closed' }),

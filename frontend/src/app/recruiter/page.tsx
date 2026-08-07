@@ -18,6 +18,7 @@ import JobPostForm from '@/components/recruiter/JobPostForm';
 import JobsList from '@/components/recruiter/JobsList';
 import ApplicantsList from '@/components/recruiter/ApplicantsList';
 import DashboardStats from '@/components/recruiter/DashboardStats';
+import { API_URL } from '@/lib/api/client';
 
 export default function RecruiterDashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'jobs' | 'applicants'>('overview');
@@ -29,8 +30,7 @@ export default function RecruiterDashboard() {
 
   const fetchJobs = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-      const response = await fetch(`${apiUrl}/career/jobs`);
+      const response = await fetch(`${API_URL}/career/jobs`);
       const data = await response.json();
       setJobs(data);
     } catch (error) {
@@ -43,8 +43,7 @@ export default function RecruiterDashboard() {
 
   const fetchApplications = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-      const response = await fetch(`${apiUrl}/career/recruiter/candidates`);
+      const response = await fetch(`${API_URL}/career/recruiter/candidates`);
       const data = await response.json();
       setApplications(data);
     } catch (error) {

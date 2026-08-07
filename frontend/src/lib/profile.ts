@@ -117,7 +117,7 @@ export type StoredProfile = {
 };
 
 export type ActivityItem = {
-  id: number;
+  id: string;
   action: string;
   message: string;
   createdAt: string;

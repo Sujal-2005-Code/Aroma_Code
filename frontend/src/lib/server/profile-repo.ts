@@ -1,6 +1,5 @@
-import { desc, eq } from "drizzle-orm";
-import { db } from "@/db";
-import { candidateProfiles, profileActivity } from "@/db/schema";
+import { ObjectId } from "mongodb";
+import { getMongoDatabase } from "@/lib/server/mongodb";
 import { generateAiAvatar } from "@/lib/avatar";
 import {
   normalizeProfile,
@@ -131,74 +130,91 @@ function seedProfile(): ProfileData {
   };
 }
 
-type Row = typeof candidateProfiles.$inferSelect;
+type ProfileDocument = {
+  _id?: ObjectId;
+  slug: string;
+  status: "draft" | "published";
+  completion: number;
+  scores?: ReturnType<typeof computeScores>;
+  insights?: string[];
+  data: ProfileData;
+  updatedAt: Date;
+  createdAt: Date;
+  fullName: string;
+  headline: string;
+  email: string;
+};
 
-function toStored(row: Row): StoredProfile {
+type ActivityDocument = {
+  _id?: ObjectId;
+  slug: string;
+  action: string;
+  message: string;
+  createdAt: Date;
+};
+
+function toStored(row: ProfileDocument): StoredProfile {
   const data = normalizeProfile(row.data);
+  const scores = row.scores ?? computeScores(data);
   return {
     slug: row.slug,
     status: row.status === "published" ? "published" : "draft",
     completion: row.completion,
-    scores: row.scores ?? computeScores(data),
-    insights: row.insights ?? generateInsights(data, computeScores(data)),
+    scores,
+    insights: row.insights ?? generateInsights(data, scores),
     updatedAt: row.updatedAt.toISOString(),
     data,
   };
 }
 
-export async function ensureProfileRow(slug: string): Promise<Row> {
-  const existing = await db
-    .select()
-    .from(candidateProfiles)
-    .where(eq(candidateProfiles.slug, slug))
-    .limit(1);
+async function profileCollections() {
+  const database = await getMongoDatabase();
+  return {
+    profiles: database.collection<ProfileDocument>("candidate_profiles"),
+    activity: database.collection<ActivityDocument>("profile_activity"),
+  };
+}
 
-  if (existing.length > 0) return existing[0];
+export async function ensureProfileRow(slug: string): Promise<ProfileDocument> {
+  const { profiles, activity } = await profileCollections();
+  const existing = await profiles.findOne({ slug });
+  if (existing) return existing;
 
   const data = slug === DEFAULT_SLUG ? seedProfile() : normalizeProfile(null);
   const scores = computeScores(data);
-
-  const inserted = await db
-    .insert(candidateProfiles)
-    .values({
-      slug,
-      fullName: data.fullName,
-      headline: data.headline,
-      email: data.email,
-      data,
-      completion: computeCompletion(data),
-      scores,
-      insights: generateInsights(data, scores),
-    })
-    .returning();
-
-  await db.insert(profileActivity).values({
+  const now = new Date();
+  const profile: ProfileDocument = {
     slug,
-    action: "create",
-    message: "Profile workspace created by AROMA onboarding",
-  });
+    fullName: data.fullName,
+    headline: data.headline,
+    email: data.email,
+    status: "draft",
+    data,
+    completion: computeCompletion(data),
+    scores,
+    insights: generateInsights(data, scores),
+    createdAt: now,
+    updatedAt: now,
+  };
+  const inserted = await profiles.insertOne(profile);
+  await activity.insertOne({ slug, action: "create", message: "Profile workspace created by AROMA onboarding", createdAt: now });
 
-  return inserted[0];
+  return { ...profile, _id: inserted.insertedId };
 }
 
 export async function getProfileBundle(
   slug: string,
 ): Promise<{ profile: StoredProfile; activity: ActivityItem[] }> {
-  const row = await ensureProfileRow(slug);
-  const activity = await db
-    .select()
-    .from(profileActivity)
-    .where(eq(profileActivity.slug, slug))
-    .orderBy(desc(profileActivity.createdAt))
-    .limit(6);
+  const [row, { activity }] = await Promise.all([ensureProfileRow(slug), profileCollections()]);
+  const entries = await activity.find({ slug }).sort({ createdAt: -1 }).limit(6).toArray();
 
   return {
     profile: toStored(row),
-    activity: activity.map((a) => ({
-      id: a.id,
-      action: a.action,
-      message: a.message,
-      createdAt: a.createdAt.toISOString(),
+    activity: entries.map((entry) => ({
+      id: entry._id?.toHexString() ?? `${entry.slug}-${entry.createdAt.getTime()}`,
+      action: entry.action,
+      message: entry.message,
+      createdAt: entry.createdAt.toISOString(),
     })),
   };
 }
@@ -214,46 +230,34 @@ export async function saveProfile(input: {
   const insights = generateInsights(data, scores);
 
   await ensureProfileRow(input.slug);
+  const { profiles, activity } = await profileCollections();
+  const now = new Date();
+  await profiles.updateOne(
+    { slug: input.slug },
+    { $set: { fullName: data.fullName, headline: data.headline, email: data.email, status: input.status, completion, scores, insights, data, updatedAt: now } },
+  );
+  const updated = await profiles.findOne({ slug: input.slug });
+  if (!updated) throw new Error("Profile was not found after saving");
 
-  const updated = await db
-    .update(candidateProfiles)
-    .set({
-      fullName: data.fullName,
-      headline: data.headline,
-      email: data.email,
-      status: input.status,
-      completion,
-      scores,
-      insights,
-      data,
-      updatedAt: new Date(),
-    })
-    .where(eq(candidateProfiles.slug, input.slug))
-    .returning();
-
-  await db.insert(profileActivity).values({
+  await activity.insertOne({
     slug: input.slug,
     action: input.status === "published" ? "publish" : "draft",
     message:
       input.status === "published"
         ? `Profile updated & published · ${completion}% complete · AI score ${scores.overall}`
         : `Draft saved · ${completion}% complete · AI score ${scores.overall}`,
+    createdAt: now,
   });
 
-  const activity = await db
-    .select()
-    .from(profileActivity)
-    .where(eq(profileActivity.slug, input.slug))
-    .orderBy(desc(profileActivity.createdAt))
-    .limit(6);
+  const entries = await activity.find({ slug: input.slug }).sort({ createdAt: -1 }).limit(6).toArray();
 
   return {
-    profile: toStored(updated[0]),
-    activity: activity.map((a) => ({
-      id: a.id,
-      action: a.action,
-      message: a.message,
-      createdAt: a.createdAt.toISOString(),
+    profile: toStored(updated),
+    activity: entries.map((entry) => ({
+      id: entry._id?.toHexString() ?? `${entry.slug}-${entry.createdAt.getTime()}`,
+      action: entry.action,
+      message: entry.message,
+      createdAt: entry.createdAt.toISOString(),
     })),
   };
 }

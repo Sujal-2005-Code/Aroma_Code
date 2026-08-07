@@ -15,6 +15,7 @@ import {
   Building2
 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
+import { API_URL } from '@/lib/api/client';
 
 interface JobPostFormProps {
   onClose: () => void;
@@ -46,8 +47,7 @@ export default function JobPostForm({ onClose, onSuccess }: JobPostFormProps) {
     formData.append('file', file);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-      const response = await fetch(`${apiUrl}/upload`, {
+      const response = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -75,9 +75,7 @@ export default function JobPostForm({ onClose, onSuccess }: JobPostFormProps) {
 
     try {
       const skillsArray = formData.skills.split(',').map(s => s.trim()).filter(s => s);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-
-      const response = await fetch(`${apiUrl}/career/jobs`, {
+      const response = await fetch(`${API_URL}/career/jobs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

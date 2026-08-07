@@ -10,6 +10,7 @@ import {
   Star,
   X,
 } from 'lucide-react';
+import { API_URL } from '@/lib/api/client';
 
 interface ApplicantsListProps {
   applications: any[];
@@ -63,8 +64,7 @@ export default function ApplicantsList({ applications, jobs, selectedJob, onRefr
 
   const updateApplicationStatus = async (studentId: string, status: string) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-      await fetch(`${apiUrl}/career/recruiter/candidates/${studentId}/status`, {
+      await fetch(`${API_URL}/career/recruiter/candidates/${studentId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
