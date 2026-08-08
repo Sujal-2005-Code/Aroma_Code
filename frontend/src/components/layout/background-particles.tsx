@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useMotionTemplate, useMotionValue, useTransform } from "framer-motion";
-import { useHydrated } from "@/lib/use-hydrated";
 
 const PARTICLE_COUNT = 18;
 const STAR_COUNT = 26;
@@ -14,7 +13,7 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
-function createSeededRandom(seed: number) {
+function useSeededRandom(seed: number) {
   return () => {
     const x = Math.sin(seed++) * 10000;
     return x - Math.floor(x);
@@ -22,7 +21,7 @@ function createSeededRandom(seed: number) {
 }
 
 function createRandomizedItems(count: number, seedBase: number) {
-  const rand = createSeededRandom(seedBase);
+  const rand = useSeededRandom(seedBase);
   return Array.from({ length: count }, (_, index) => {
     const color = particlePalette[Math.floor(rand() * particlePalette.length)];
     const left = rand() * 100;
@@ -86,37 +85,32 @@ function usePointer() {
   return pointer;
 }
 
-function subscribeToReducedMotion(onStoreChange: () => void) {
-  const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-  mediaQuery.addEventListener("change", onStoreChange);
-  return () => mediaQuery.removeEventListener("change", onStoreChange);
-}
-
 function usePrefersReducedMotion() {
-  return useSyncExternalStore(
-    subscribeToReducedMotion,
-    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-    () => false,
-  );
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduceMotion(mediaQuery.matches);
+
+    const handleChange = (event: MediaQueryListEvent) => {
+      setReduceMotion(event.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  return reduceMotion;
 }
 
 function BackgroundBlob({ seed, className }: { seed: number; className: string }) {
-  const config = useMemo(() => {
-    const rand = createSeededRandom(seed);
-    const duration = 10 + rand() * 10;
-    const hues = ["rgba(255,138,26,0.18)", "rgba(246,30,102,0.12)", "rgba(139,92,246,0.12)", "rgba(56,189,248,0.1)"];
-
-    return {
-      baseX: 20 + rand() * 60,
-      baseY: 10 + rand() * 70,
-      size: 220 + rand() * 260,
-      duration,
-      delay: -rand() * duration,
-      hue: hues[Math.floor(rand() * hues.length)],
-    };
-  }, [seed]);
-  const driftRandom = useMemo(() => createSeededRandom(seed + 1), [seed]);
-  const { baseX, baseY, size, duration, delay, hue } = config;
+  const rand = useMemo(() => useSeededRandom(seed), [seed]);
+  const baseX = 20 + rand() * 60;
+  const baseY = 10 + rand() * 70;
+  const size = 220 + rand() * 260;
+  const duration = 10 + rand() * 10;
+  const delay = -rand() * duration;
+  const hue = ["rgba(255,138,26,0.18)", "rgba(246,30,102,0.12)", "rgba(139,92,246,0.12)", "rgba(56,189,248,0.1)"][Math.floor(rand() * 4)];
 
   const x = useMotionValue(baseX);
   const y = useMotionValue(baseY);
@@ -129,16 +123,16 @@ function BackgroundBlob({ seed, className }: { seed: number; className: string }
 
   useEffect(() => {
     const interval = window.setInterval(() => {
-      const driftX = (driftRandom() - 0.5) * 10;
-      const driftY = (driftRandom() - 0.5) * 10;
+      const driftX = (rand() - 0.5) * 10;
+      const driftY = (rand() - 0.5) * 10;
       x.set(baseX + driftX);
       y.set(baseY + driftY);
-      scale.set(0.95 + driftRandom() * 0.18);
-      opacity.set(0.18 + driftRandom() * 0.14);
+      scale.set(0.95 + rand() * 0.18);
+      opacity.set(0.18 + rand() * 0.14);
     }, duration * 1000);
 
     return () => window.clearInterval(interval);
-  }, [baseX, baseY, driftRandom, duration, opacity, scale, x, y]);
+  }, [baseX, baseY, duration, opacity, rand, scale, x, y]);
 
   return (
     <motion.div
@@ -175,11 +169,9 @@ function FloatingParticle({ item }: { item: ReturnType<typeof createRandomizedIt
   const spotlight = useMotionTemplate`radial-gradient(circle, ${item.color} 0%, ${item.color}88 28%, transparent 72%)`;
 
   useEffect(() => {
-    let tick = 0;
     const interval = window.setInterval(() => {
-      tick += 1;
-      const offsetX = item.driftX * (0.5 + Math.sin(tick + item.id) * 0.2);
-      const offsetY = item.driftY * (0.5 + Math.cos(tick + item.id) * 0.2);
+      const offsetX = item.driftX * (0.35 + Math.random() * 0.25);
+      const offsetY = item.driftY * (0.35 + Math.random() * 0.25);
       x.set(clamp(item.left + offsetX, 0, 100));
       y.set(clamp(item.top + offsetY, 0, 100));
     }, item.duration * 1000 * 0.75);
@@ -247,7 +239,7 @@ function TinyStar({ item }: { item: ReturnType<typeof createRandomizedItems>[num
 }
 
 export function AnimatedBackground() {
-  const mounted = useHydrated();
+  const [mounted, setMounted] = useState(false);
   const reduceMotion = usePrefersReducedMotion();
   const pointer = usePointer();
   const particleCount = reduceMotion ? Math.max(10, Math.floor(PARTICLE_COUNT * 0.6)) : PARTICLE_COUNT;
@@ -257,6 +249,10 @@ export function AnimatedBackground() {
   const particles = useMemo(() => createRandomizedItems(particleCount, 17), [particleCount]);
   const stars = useMemo(() => createRandomizedItems(starCount, 97), [starCount]);
   const blobs = useMemo(() => createRandomizedItems(blobCount, 173), [blobCount]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (!mounted) {
     return null;

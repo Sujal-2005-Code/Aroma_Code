@@ -9,6 +9,7 @@ function useTypewriter(text: string, speed = 16) {
   const [typed, setTyped] = useState("");
 
   useEffect(() => {
+    setTyped("");
     if (!text) return;
 
     let index = 0;

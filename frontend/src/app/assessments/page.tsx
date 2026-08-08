@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   ClipboardList, Clock, Search, Filter, Play, CheckCircle2,
   XCircle, Calendar, Building2, Code2, FileQuestion, ChevronRight,
-  Trophy, AlertCircle, Sparkles
+  Trophy, AlertCircle
 } from "lucide-react";
 import { getAssessments } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -106,16 +106,11 @@ export default function AssessmentsPage() {
   return (
     <DashboardLayout>
       <div className="max-w-[1400px] mx-auto space-y-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-text-primary mb-1">Assessments</h1>
             <p className="text-text-muted">Take assessments to prove your skills and get placed.</p>
           </div>
-          <Link href="/assessments/ai">
-            <Button className="w-full md:w-auto">
-              <Sparkles className="w-4 h-4" /> Try AI Assessment
-            </Button>
-          </Link>
         </motion.div>
 
         {loading && <Card className="text-center py-8 text-text-muted">Loading assessments...</Card>}

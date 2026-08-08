@@ -6,57 +6,6 @@ load_dotenv()
 
 JUDGE0_URL = os.getenv("JUDGE0_URL")
 
-
-def _normalize_output(text: str) -> str:
-    if text is None:
-        return ""
-
-    normalized = str(text).replace("\r\n", "\n").replace("\r", "\n")
-    lines = [line.rstrip() for line in normalized.split("\n")]
-
-    while lines and lines[-1] == "":
-        lines.pop()
-
-    while lines and lines[0] == "":
-        lines.pop(0)
-
-    return "\n".join(lines)
-
-
-def _collapse_whitespace(text: str) -> str:
-    import re
-
-    if text is None:
-        return ""
-
-    s = str(text).replace("\r\n", "\n").replace("\r", "\n")
-    parts = [p.strip() for p in s.splitlines() if p.strip() != ""]
-    joined = " ".join(parts)
-    return re.sub(r"\s+", " ", joined).strip()
-
-
-def _tokens_from_text(text: str) -> str:
-    """Convert bracket/comma-separated outputs into a normalized token string.
-
-    Examples:
-    - "[0,1]" -> "0 1"
-    - "0\n1" -> "0 1"
-    - "0 1" -> "0 1"
-    """
-    import re
-
-    if text is None:
-        return ""
-
-    s = str(text)
-    # Replace common list delimiters with spaces
-    s = re.sub(r"[\[\]\(\),;{}]", " ", s)
-    # Replace newlines and tabs with spaces
-    s = s.replace("\r\n", "\n").replace("\r", "\n").replace("\t", " ")
-    # Collapse whitespace
-    s = re.sub(r"\s+", " ", s)
-    return s.strip()
-
 # Judge0 Language IDs
 LANGUAGE_IDS = {
     "python": 71,
@@ -83,27 +32,23 @@ def execute_code(language: str, source_code: str, stdin: str = ""):
     }
 
     try:
+
         response = requests.post(
             f"{JUDGE0_URL}/submissions?base64_encoded=false&wait=true",
             json=payload,
-            timeout=30,
+            timeout=30
         )
-
-        if response.status_code >= 400:
-            return {
-                "success": False,
-                "message": f"Judge0 request failed with status {response.status_code}: {response.text}",
-            }
 
         return {
             "success": True,
-            "data": response.json(),
+            "data": response.json()
         }
 
     except Exception as e:
+
         return {
             "success": False,
-            "message": str(e),
+            "message": str(e)
         }
 
 
@@ -147,25 +92,10 @@ def evaluate_submission(
 
         data = result["data"]
 
-        stdout = _normalize_output(data.get("stdout"))
-        expected = _normalize_output(testcase.get("output", ""))
+        stdout = (data.get("stdout") or "").strip()
+        expected = testcase["output"].strip()
 
-        status_info = data.get("status") or {}
-        status_description = str(status_info.get("description") or "Unknown")
-
-        if status_info.get("id") not in (None, 3):
-            stdout = f"{stdout}\n{status_description}".strip()
-
-        # Strict comparison first
         is_passed = stdout == expected
-
-        # Fallback: compare collapsed whitespace forms (handles newlines vs spaces)
-        if not is_passed:
-            is_passed = _collapse_whitespace(stdout) == _collapse_whitespace(expected)
-
-        # Fallback: compare tokenized forms (handles lists like "[0,1]", "0\n1", "0 1")
-        if not is_passed:
-            is_passed = _tokens_from_text(stdout) == _tokens_from_text(expected)
 
         if is_passed:
             passed += 1
@@ -189,7 +119,7 @@ def evaluate_submission(
             "actual_output": stdout,
             "execution_time": data.get("time"),
             "memory": memory,
-            "status": status_description,
+            "status": data.get("status", {}).get("description")
         })
 
     total = len(hidden_test_cases)

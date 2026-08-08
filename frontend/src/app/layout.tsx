@@ -24,8 +24,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" className="font-sans" suppressHydrationWarning>
-      <body className="relative isolate" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" className="font-sans">
+      <body className="relative isolate">
         <SmoothScroll />
         <div className="relative z-10">
           <TooltipProvider>{children}</TooltipProvider>
